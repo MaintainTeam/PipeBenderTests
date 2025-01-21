@@ -29,7 +29,6 @@ jobs:
     steps:
       - name: Create proper environment for multiple apk output
         run: |
-          apt install rename
           mkdir -p "${{ github.workspace }}/output"
 
           if [[ "${{ inputs.style }}" -eq "1" ]]; then
@@ -135,25 +134,27 @@ jobs:
           if [[ "${{ inputs.style }}" -eq "1" ]]; then
           version=$( grep "versionName" "${{ github.workspace }}/master/app/build.gradle" | awk -F'"' '{print $2}' )
           ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign --ks apksign.keystore --ks-pass env:SIGNING_STORE_PASSWORD "./master.apk"
+          mv "master.apk" "pipebender_v${version}"
 
           elif [[ "${{ inputs.style }}" -eq "2" ]]; then
           version=$( grep "versionName" "${{ github.workspace }}/extended/app/build.gradle" | awk -F'"' '{print $2}' )
           ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign --ks apksign.keystore --ks-pass env:SIGNING_STORE_PASSWORD "./extended.apk"
+          mv "extended.apk" "pipebender_extended_v${version}"
 
           elif [[ "${{ inputs.style }}" -eq "3" ]]; then
           version=$( grep "versionName" "${{ github.workspace }}/master/app/build.gradle" | awk -F'"' '{print $2}' )   # Use version of master app while both released !
           ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign --ks apksign.keystore --ks-pass env:SIGNING_STORE_PASSWORD "./master.apk"
+          mv "master.apk" "pipebender_v${version}"
           ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign --ks apksign.keystore --ks-pass env:SIGNING_STORE_PASSWORD "./extended.apk"
+          mv "extended.apk" "pipebender_extended_v${version}"
 
           else
           mkdir "${{ github.workspace }}/current"
           version=$( grep "versionName" "${{ github.workspace }}/current/app/build.gradle" | awk -F'"' '{print $2}' )
           ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign --ks apksign.keystore --ks-pass env:SIGNING_STORE_PASSWORD "./current.apk"
+          mv "current.apk" "pipebender_v${version}"
           fi
-
-          rename "master" "pipebender_v${version}"
-          rename "extended" "pipebender_v${version}-e"
-          rename "current" "pipebender_v${version}"
+          
           ls -la
 
       - name: Generate checksum
