@@ -160,7 +160,7 @@ jobs:
       - name: Generate checksum
         run: |
           cd "${{ github.workspace }}/output/"
-          sha256sum *.apk > ./checksums.txt
+          find . -name '*.apk' -type f -exec sha256sum {} \; > checksums.txt
           echo "::notice::$(cat ./checksums.txt)"
 
 
@@ -168,7 +168,7 @@ jobs:
         run: |
           gh auth login --with-token <<<"${{ secrets.GITHUB_TOKEN }}"
           gh release create "v${version}" --title "${{ inputs.title }}" --notes-file ".github/changelog.md" --prerelease="true" --repo MaintainTeam/PipeBenderTests
-          gh release upload "v${version}" "${{ github.workspace }}/output/{*.apk,checksums.txt}" --repo MaintainTeam/PipeBenderTests
+          gh release upload "v${version}" "${{ github.workspace }}/output/echo $(echo $(find . -name '*.apk' -type f -exec basename \{} \;) checksums.txt)" --repo MaintainTeam/PipeBenderTests
 
       - name: Archive reports for job
         uses: actions/upload-artifact@v4
