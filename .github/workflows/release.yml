@@ -158,20 +158,24 @@ jobs:
           ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign --ks apksign.keystore --ks-pass env:SIGNING_STORE_PASSWORD "./current.apk"
           mv "current.apk" "pipebender_v${version}"
           fi
-          
+
+          echo ${version} > version.num
           ls -la
 
       - name: Generate checksum
         run: |
           cd "${{ github.workspace }}/output/"
           find . -name '*.apk' -type f -exec sha256sum {} \; > checksums.txt
-          echo "::notice::$(cat ./checksums.txt)"
+          echo "::notice::$(echo $(cat ./checksums.txt))"
+          ls -la
 
 
       - name: Create release and upload
         run: |
           gh auth login --with-token <<<"${{ secrets.GITHUB_TOKEN }}"
           cd "${{ github.workspace }}/output/"
+          version=$(cat version.num)
+          echo $version
           gh release create "v${version}" --title "${{ inputs.title }}" --notes-file "./changelog.md" --prerelease="true" --repo MaintainTeam/PipeBenderTests
           gh release upload "v${version}" $(echo $(find . -name '*.apk' -type f -exec basename \{} \;) checksums.txt) --repo MaintainTeam/PipeBenderTests
 
