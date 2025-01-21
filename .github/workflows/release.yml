@@ -96,12 +96,14 @@ jobs:
           echo "::notice::building master"
           ./gradlew assembleRelease
           mv "${{ github.workspace }}/master/app/build/outputs/apk/release/app-release-unsigned.apk" "${{ github.workspace }}/output/master.apk"
+          cp "./github/changelog.md" "${{ github.workspace }}/output/"
 
           elif [[ "${{ inputs.style }}" -eq "2" ]]; then
           cd "${{ github.workspace }}/extended/"
           echo "::notice::building extended"
           ./gradlew assembleRelease
           mv "${{ github.workspace }}/extended/app/build/outputs/apk/release/app-release-unsigned.apk" "${{ github.workspace }}/output/extended.apk"
+          cp "./github/changelog.md" "${{ github.workspace }}/output/"
 
           elif [[ "${{ inputs.style }}" -eq "3" ]]; then
           echo "::notice::both master and extended are going to build"
@@ -110,6 +112,7 @@ jobs:
           echo "::notice::building master"
           ./gradlew assembleRelease
           mv "${{ github.workspace }}/master/app/build/outputs/apk/release/app-release-unsigned.apk" "${{ github.workspace }}/output/master.apk"
+          cp "./github/changelog.md" "${{ github.workspace }}/output/"
 
           cd "${{ github.workspace }}/extended"
           echo "::notice::building extended"
@@ -121,6 +124,7 @@ jobs:
           echo "::notice::building current"
           ./gradlew assembleRelease
           mv "${{ github.workspace }}/current/app/build/outputs/apk/release/app-release-unsigned.apk" "${{ github.workspace }}/output/current.apk"
+          cp "./github/changelog.md" "${{ github.workspace }}/output/"
           fi
 
       - name: Sign APK
@@ -167,7 +171,7 @@ jobs:
       - name: Create release and upload
         run: |
           gh auth login --with-token <<<"${{ secrets.GITHUB_TOKEN }}"
-          gh release create "v${version}" --title "${{ inputs.title }}" --notes-file ".github/changelog.md" --prerelease="true" --repo MaintainTeam/PipeBenderTests
+          gh release create "v${version}" --title "${{ inputs.title }}" --notes-file "./changelog.md" --prerelease="true" --repo MaintainTeam/PipeBenderTests
           cd "${{ github.workspace }}/output/"
           gh release upload "v${version}" "echo $(find . -name '*.apk' -type f -exec basename \{} \;) checksums.txt" --repo MaintainTeam/PipeBenderTests
 
